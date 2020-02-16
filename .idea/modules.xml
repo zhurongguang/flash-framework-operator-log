@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/flash-framework-operator-log.iml" filepath="$PROJECT_DIR$/flash-framework-operator-log.iml" />
+      <module fileurl="file://$PROJECT_DIR$/operator-log-api/operator-log-api.iml" filepath="$PROJECT_DIR$/operator-log-api/operator-log-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/operator-log-common/operator-log-common.iml" filepath="$PROJECT_DIR$/operator-log-common/operator-log-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/operator-log-core/operator-log-core.iml" filepath="$PROJECT_DIR$/operator-log-core/operator-log-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/operator-log-demo/operator-log-demo.iml" filepath="$PROJECT_DIR$/operator-log-demo/operator-log-demo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/operator-log-server/operator-log-server.iml" filepath="$PROJECT_DIR$/operator-log-server/operator-log-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/operator-log-web/operator-log-web.iml" filepath="$PROJECT_DIR$/operator-log-web/operator-log-web.iml" />
+    </modules>
+  </component>
+</project>

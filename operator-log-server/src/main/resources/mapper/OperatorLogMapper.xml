@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.flash.framework.operator.log.server.dao.OperatorLogDao">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.flash.framework.operator.log.server.model.OperationLog">
+        <id column="id" property="id"/>
+        <result column="module" property="module"/>
+        <result column="operator" property="operator"/>
+        <result column="params" property="params"/>
+        <result column="method" property="method"/>
+        <result column="operation_type" property="operationType"/>
+        <result column="operator_id" property="operatorId"/>
+        <result column="operator_name" property="operatorName"/>
+        <result column="operator_ip" property="operatorIp"/>
+        <result column="status" property="status"/>
+        <result column="error_msg" property="errorMsg"/>
+        <result column="oper_time" property="operTime"/>
+        <result column="histry_record" property="histryRecord"/>
+        <result column="new_record" property="newRecord"/>
+        <result column="desc" property="desc"/>
+        <result column="extra_json" property="extraJson"/>
+        <result column="tenant_id" property="tenantId"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="create_by" property="createBy"/>
+        <result column="update_by" property="updateBy"/>
+    </resultMap>
+
+    <sql id="OperatorLogCondition">
+        <if test="null != module and module != ''">
+            AND `module` = #{module}
+        </if>
+        <if test="null != operator and operator != ''">
+            AND operator = #{operator}
+        </if>
+        <if test="null != operationType and operationType != ''">
+            AND operation_type = #{operationType}
+        </if>
+        <if test="null != operatorId">
+            AND operator_id = #{operatorId}
+        </if>
+        <if test="null != operatorName and operatorName != ''">
+            AND operator_name LIKE CONCAT(#{operatorName},'%')
+        </if>
+        <if test="null != operatorIp and operatorIp != ''">
+            AND operator_ip = #{operatorIp}
+        </if>
+        <if test="null != status">
+            AND status = #{status}
+        </if>
+        <if test="null != tenantId and tenantId != ''">
+            AND tenant_id = #{tenantId}
+        </if>
+        <if test="null != startTime and startTime != ''">
+            AND <![CDATA[ oper_time >= #{startTime} ]]>
+        </if>
+        <if test="null != endTime and endTime != ''">
+            AND <![CDATA[ oper_time <= #{endTime} ]]>
+        </if>
+        <if test="null != operatorIds and operatorIds.size() > 0">
+            AND operator_id IN
+            <foreach collection="operatorIds" index="opid" open="(" close=")" separator=",">
+                #{opid}
+            </foreach>
+        </if>
+    </sql>
+
+    <select id="selectPageCountByCondition" resultType="long" parameterType="map">
+        SELECT COUNT(id) FROM operation_log
+        <where>
+            <include refid="OperatorLogCondition"/>
+        </where>
+    </select>
+
+    <select id="selectPageByCondition" resultMap="BaseResultMap"
+            parameterType="map">
+        SELECT t1.* FROM operation_log t1 INNER JOIN (
+        SELECT id FROM operation_log
+        <where>
+            <include refid="OperatorLogCondition"/>
+        </where>
+        ORDER BY created_at DESC
+        LIMIT #{offset},#{limit}
+        ) t2 ON t1.id = t2.id
+    </select>
+</mapper>
