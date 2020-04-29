@@ -12,7 +12,7 @@ public class DemoOperatorLogContext implements RequestContext {
 
     @Override
     public Long getUserId() {
-        return 1l;
+        return 1L;
     }
 
     @Override

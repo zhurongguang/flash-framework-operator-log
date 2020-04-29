@@ -1,4 +1,4 @@
-package com.flash.framework.operator.log.api.reader;
+package com.flash.framework.operator.log.api.facade;
 
 
 import com.flash.framework.commons.paging.Paging;
@@ -13,7 +13,7 @@ import com.flash.framework.operator.log.api.request.OperatorLogPagingRequest;
  * @author zhurg
  * @date 2019/2/8 - 上午10:06
  */
-public interface OperatorLogReader {
+public interface OperatorLogFacade {
 
     /**
      * 分页查询操作日志

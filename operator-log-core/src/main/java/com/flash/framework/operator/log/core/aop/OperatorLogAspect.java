@@ -10,6 +10,7 @@ import com.flash.framework.operator.log.common.annotation.OperationLog;
 import com.flash.framework.operator.log.common.dto.OperationLogDTO;
 import com.flash.framework.operator.log.common.processor.OperationLogProcessor;
 import com.flash.framework.operator.log.core.writer.OperationLogWriter;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -89,8 +90,8 @@ public class OperatorLogAspect {
         }
 
         OperationLogProcessor operationLogProcessor = null;
-        if (Objects.nonNull(anno.logProcessor())) {
-            operationLogProcessor = logProcessorMap.get(anno.logProcessor());
+        if (Objects.nonNull(anno.logProcessor()) && anno.logProcessor().length > 0) {
+            operationLogProcessor = logProcessorMap.get(anno.logProcessor()[0]);
         }
         try {
 
@@ -113,7 +114,7 @@ public class OperatorLogAspect {
             try {
                 operationLogWriter.saveOperationLog(operationLogDTO);
             } catch (Exception e) {
-                log.error("[OperationLog] save operation log failed,cause: ", e);
+                log.error("[OperationLog] save operation log failed,cause:{}", Throwables.getStackTraceAsString(e));
             }
         }
     }
@@ -123,7 +124,7 @@ public class OperatorLogAspect {
             try {
                 operationLogProcessor.beforeProcess(operationLogDTO, args);
             } catch (Throwable e) {
-                log.error("[OperationLog] OperationLogProcessor {} do beforeProcess failed,cause:", operationLogProcessor.getClass().getCanonicalName(), e);
+                log.error("[OperationLog] OperationLogProcessor {} do beforeProcess failed,cause:{}", operationLogProcessor.getClass().getCanonicalName(), Throwables.getStackTraceAsString(e));
             }
         }
     }
@@ -133,7 +134,7 @@ public class OperatorLogAspect {
             try {
                 operationLogProcessor.afterProcess(operationLogDTO, result, args);
             } catch (Throwable e) {
-                log.error("[OperationLog] OperationLogProcessor {} do afterProcess failed,cause:", operationLogProcessor.getClass().getCanonicalName(), e);
+                log.error("[OperationLog] OperationLogProcessor {} do afterProcess failed,cause:{}", operationLogProcessor.getClass().getCanonicalName(), Throwables.getStackTraceAsString(e));
             }
         }
     }
@@ -143,7 +144,7 @@ public class OperatorLogAspect {
             try {
                 operationLogProcessor.exceptionProcess(operationLogDTO, args);
             } catch (Throwable e) {
-                log.error("[OperationLog] OperationLogProcessor {} do exceptionProcess failed,cause:", operationLogProcessor.getClass().getCanonicalName(), e);
+                log.error("[OperationLog] OperationLogProcessor {} do exceptionProcess failed,cause:{}", operationLogProcessor.getClass().getCanonicalName(), Throwables.getStackTraceAsString(e));
             }
         }
     }

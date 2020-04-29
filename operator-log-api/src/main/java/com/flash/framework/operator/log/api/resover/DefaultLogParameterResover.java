@@ -3,6 +3,7 @@ package com.flash.framework.operator.log.api.resover;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.flash.framework.operator.log.api.utils.SwaggerUtils;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -39,7 +40,7 @@ public class DefaultLogParameterResover implements LogParameterResover {
                     SwaggerUtils.resoverSwagger(target, results);
                 }
             } catch (Exception e) {
-                log.error("[OperationLog] LogParameterResover resover params {} failed,cause:", params, e);
+                log.error("[OperationLog] LogParameterResover resover params {} failed,cause:{}", params, Throwables.getStackTraceAsString(e));
             }
         });
         return results;

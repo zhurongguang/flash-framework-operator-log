@@ -5,6 +5,7 @@ import com.flash.framework.operator.log.common.dto.OperationLogDTO;
 import com.flash.framework.operator.log.server.converter.OperationLogConverter;
 import com.flash.framework.operator.log.server.dao.OperatorLogDao;
 import com.flash.framework.operator.log.server.model.OperationLog;
+import com.google.common.base.Throwables;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,7 @@ public class OperatorLogService {
             model.setUpdatedAt(model.getCreatedAt());
             return operatorLogDao.insert(model) == 1;
         } catch (Exception e) {
-            log.error("[OperationLog] operation log save failed,cause:", e);
+            log.error("[OperationLog] operation log save failed,cause:{}", Throwables.getStackTraceAsString(e));
             return false;
         }
     }

@@ -3,6 +3,7 @@ package com.flash.framework.operator.log.core.writer.rocketmq;
 import com.alibaba.fastjson.JSON;
 import com.flash.framework.operator.log.common.dto.OperationLogDTO;
 import com.flash.framework.operator.log.core.writer.OperationLogWriter;
+import com.google.common.base.Throwables;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
@@ -36,7 +37,7 @@ public class RocketMqOperationLogWriter implements OperationLogWriter {
 
             @Override
             public void onException(Throwable throwable) {
-                log.error("[OperationLog] send operator log message failed", throwable);
+                log.error("[OperationLog] send operator log message failed,cause:{}", Throwables.getStackTraceAsString(throwable));
             }
         });
     }

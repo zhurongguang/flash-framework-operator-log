@@ -4,13 +4,14 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.flash.framework.commons.paging.Paging;
 import com.flash.framework.dubbo.common.response.RpcResponse;
-import com.flash.framework.operator.log.api.reader.OperatorLogReader;
+import com.flash.framework.operator.log.api.facade.OperatorLogFacade;
 import com.flash.framework.operator.log.api.request.OperatorLogInfoRequest;
 import com.flash.framework.operator.log.api.request.OperatorLogPagingRequest;
 import com.flash.framework.operator.log.common.dto.OperationLogDTO;
 import com.flash.framework.operator.log.server.converter.OperationLogConverter;
 import com.flash.framework.operator.log.server.dao.OperatorLogDao;
 import com.flash.framework.operator.log.server.model.OperationLog;
+import com.google.common.base.Throwables;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service(version = "${operator.log.reader.version:1.0.0}", retries = 3, accesslog = "true", timeout = 1000)
-public class OperatorLogReaderImpl implements OperatorLogReader {
+public class OperatorLogFacadeImpl implements OperatorLogFacade {
 
     @Autowired
     private OperatorLogDao operatorLogDao;
@@ -65,7 +66,7 @@ public class OperatorLogReaderImpl implements OperatorLogReader {
             }
             return RpcResponse.ok(paging);
         } catch (Exception e) {
-            log.error("[OperationLog] query operatorLog page failed,cause:", e);
+            log.error("[OperationLog] query operatorLog page failed,cause:{}", Throwables.getStackTraceAsString(e));
             return RpcResponse.fail("operatorLog.paging.query.failed");
         }
     }
@@ -84,7 +85,7 @@ public class OperatorLogReaderImpl implements OperatorLogReader {
             }
             return RpcResponse.ok(null);
         } catch (Exception e) {
-            log.error("[OperationLog] query operatorLog by id failed,cause:", e);
+            log.error("[OperationLog] query operatorLog by id failed,cause:{}", Throwables.getStackTraceAsString(e));
             return RpcResponse.fail("operatorLog.info.query.failed");
         }
     }

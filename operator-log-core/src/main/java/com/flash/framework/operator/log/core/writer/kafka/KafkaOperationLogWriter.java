@@ -3,6 +3,7 @@ package com.flash.framework.operator.log.core.writer.kafka;
 import com.alibaba.fastjson.JSON;
 import com.flash.framework.operator.log.common.dto.OperationLogDTO;
 import com.flash.framework.operator.log.core.writer.OperationLogWriter;
+import com.google.common.base.Throwables;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,7 +39,7 @@ public class KafkaOperationLogWriter implements OperationLogWriter {
 
             @Override
             public void onFailure(Throwable ex) {
-                log.error("[OperationLog] send operator log message failed ", ex);
+                log.error("[OperationLog] send operator log message failed,cause:{}", Throwables.getStackTraceAsString(ex));
             }
         });
     }

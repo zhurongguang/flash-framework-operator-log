@@ -4,7 +4,7 @@ import com.flash.framework.commons.context.RequestContext;
 import com.flash.framework.commons.paging.Paging;
 import com.flash.framework.dubbo.common.response.RpcResponse;
 import com.flash.framework.dubbo.common.utils.RpcResponseUtils;
-import com.flash.framework.operator.log.api.reader.OperatorLogReader;
+import com.flash.framework.operator.log.api.facade.OperatorLogFacade;
 import com.flash.framework.operator.log.api.request.OperatorLogInfoRequest;
 import com.flash.framework.operator.log.api.request.OperatorLogPagingRequest;
 import com.flash.framework.operator.log.common.dto.OperationLogDTO;
@@ -34,7 +34,7 @@ import java.util.Objects;
 public class OperatorLogController {
 
     @Reference(version = "${operator.log.reader.version:1.0.0}")
-    private OperatorLogReader operatorLogReader;
+    private OperatorLogFacade operatorLogFacade;
 
     @Autowired
     private OperationLogConverter operationLogConverter;
@@ -47,7 +47,7 @@ public class OperatorLogController {
     @ApiOperation("操作日志列表")
     public Paging<OperationLogDTO> list(OperatorLogPagingRequest request) throws Exception {
         request.setTenantId(requestContext.getTenantId());
-        RpcResponse<Paging<OperationLogDTO>> response = operatorLogReader.queryOperatorLogPage(request);
+        RpcResponse<Paging<OperationLogDTO>> response = operatorLogFacade.queryOperatorLogPage(request);
         return RpcResponseUtils.getResponse(response, msg -> new WebException(msg));
     }
 
@@ -62,7 +62,7 @@ public class OperatorLogController {
     public OperationLogVO info(@PathVariable("id") Long id) throws Exception {
         OperatorLogInfoRequest operatorLogInfoRequest = new OperatorLogInfoRequest();
         operatorLogInfoRequest.setId(id);
-        RpcResponse<OperationLogDTO> response = operatorLogReader.queryOperatorLogById(operatorLogInfoRequest);
+        RpcResponse<OperationLogDTO> response = operatorLogFacade.queryOperatorLogById(operatorLogInfoRequest);
         if (response.isSuccess()) {
             if (Objects.nonNull(response.getResult())) {
                 return operationLogConverter.convertOperationLogDTO2OperationLogVO(response.getResult());

@@ -1,6 +1,7 @@
 package com.flash.framework.operator.log.common.dto;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -92,6 +93,7 @@ public class OperationLogDTO implements Serializable {
      */
     @ApiModelProperty("操作时间")
     @JSONField(format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date operTime;
 
     /**
@@ -115,6 +117,7 @@ public class OperationLogDTO implements Serializable {
     /**
      * 扩展字段
      */
+    @ApiModelProperty("扩展字段")
     private Map<String, String> extra;
 
     /**

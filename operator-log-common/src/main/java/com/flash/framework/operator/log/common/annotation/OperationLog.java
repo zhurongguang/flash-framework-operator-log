@@ -49,5 +49,5 @@ public @interface OperationLog {
      *
      * @return
      */
-    Class<? extends OperationLogProcessor> logProcessor() default OperationLogProcessor.class;
+    Class<? extends OperationLogProcessor>[] logProcessor() default {};
 }

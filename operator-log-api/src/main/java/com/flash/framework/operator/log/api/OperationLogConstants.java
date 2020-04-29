@@ -7,12 +7,7 @@ package com.flash.framework.operator.log.api;
 public interface OperationLogConstants {
 
     String OPERATION_LOG_PROCESSOR = "logProcessor";
-
-    /**
-     * 标识符
-     */
-    String POINT = ".";
-
+    
     /**
      * 操作日志：操作成功
      */

@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
+ * 增强版OperationLogProcessor抽象实现，可以记录操作前、操作后的数据
+ *
  * @author zhurg
  * @date 2019/9/12 - 上午9:55
  */

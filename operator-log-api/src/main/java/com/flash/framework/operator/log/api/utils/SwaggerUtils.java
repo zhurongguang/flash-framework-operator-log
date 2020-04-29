@@ -1,5 +1,6 @@
 package com.flash.framework.operator.log.api.utils;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -31,6 +32,13 @@ public class SwaggerUtils {
             BigDecimal.class
     );
 
+    /**
+     * 解析swagger注解
+     *
+     * @param target
+     * @param results
+     * @throws Exception
+     */
     public static void resoverSwagger(Object target, Map<String, Object> results) throws Exception {
         //解析swagger
         Field[] fields = target.getClass().getDeclaredFields();
@@ -51,7 +59,7 @@ public class SwaggerUtils {
                                         resoverSwagger(item, subResults);
                                         list.add(subResults);
                                     } catch (Exception e) {
-                                        log.warn("[OperationLog] Field {} analysis fialed,cause:", item, e);
+                                        log.warn("[OperationLog] Field {} analysis fialed,cause:{}", item, Throwables.getStackTraceAsString(e));
                                     }
                                 });
                             }
