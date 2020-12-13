@@ -1,0 +1,80 @@
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/*Mapper.xml
+  #实体扫描，多个package用逗号或者分号分隔
+  typeAliasesPackage: com.flash.framework.operator.log.server.model
+  global-config:
+    banner: false
+    db-config:
+      insert-strategy: ignored
+      update-strategy: not_empty
+      select-strategy: ignored
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+spring:
+  application:
+    name: operator-log-server
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:operator-log}?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&zeroDateTimeBehavior=convertToNull
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:password}
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 15
+      auto-commit: true
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+## Redis配置
+#  redis:
+#    database: 0
+#    password:
+#    host: localhost
+#    port: 6379
+#    lettuce:
+#      pool:
+#        max-active: 10
+#        min-idle: 5
+## KafKa配置
+#  kafka:
+#    bootstrap-servers: localhost:9092
+#    consumer:
+#      group-id: operatorlog
+#      auto-offset-reset: latest
+#      enable-auto-commit: true
+#      auto-commit-interval: 20000ms
+#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+dubbo:
+  scan:
+    base-packages: >
+      com.flash.framework.operator.log.server.facade
+  application:
+    name: operator-log-server
+    qos-enable: ${DUBBO_QOS_ENABLE:false}
+    qos-port: ${DUBBO_QOS_PORT:22222}
+    logger: slf4j
+  registry:
+    check: true
+    address: ${DUBBO_REGISTRY_ADDRESS:nacos://127.0.0.1:8848?namingLoadCacheAtStart=true}
+  protocol:
+    name: dubbo
+    port: ${DUBBO_PORT:20880}
+    serialization: protostuff
+  provider:
+    accesslog: ${DUBBO_ACCESSLOG:true}
+    delay: -1
+  metadata-report:
+    address: ${dubbo.registry.address}
+  config-center:
+    address: ${dubbo.registry.address}
+
+## RocketMQ 配置
+rocketmq:
+  name-server: ${ROCKETMQ_NAMESERVER_ADDR:localhost:9876}
+  producer:
+    group: OPERATOR_LOG_PRODUCER_GROUP
+

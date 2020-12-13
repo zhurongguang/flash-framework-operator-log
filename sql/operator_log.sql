@@ -21,9 +21,10 @@ CREATE TABLE `operation_log` (
   `update_by` varchar(50) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '更新人',
   `tenant_id` int(11) DEFAULT NULL COMMENT '租户ID',
   `new_record` varchar(1000) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '新数据',
+  `deleted` tinyint(2) NOT NULL DEFAULT '0' COMMENT '逻辑删除',
   PRIMARY KEY (`id`),
   KEY `idx_created_at` (`created_at`),
   KEY `idx_module` (`module`),
   KEY `idx_operator` (`operator`),
   KEY `idx_operator_id` (`operator_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;

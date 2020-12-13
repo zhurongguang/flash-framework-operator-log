@@ -1,14 +1,11 @@
 package com.flash.framework.operator.log.core.autoconfigure;
 
-import com.flash.framework.operator.log.api.resover.DefaultLogParameterResover;
-import com.flash.framework.operator.log.api.resover.LogParameterResover;
+import com.flash.framework.operator.log.common.resover.LogParameterResover;
 import com.flash.framework.operator.log.core.aop.OperatorLogAspect;
-import com.flash.framework.operator.log.core.writer.OperationLogWriter;
-import com.flash.framework.operator.log.core.writer.kafka.KafkaOperationLogWriter;
-import com.flash.framework.operator.log.core.writer.redis.RedisOperationLogWriter;
-import com.flash.framework.operator.log.core.writer.rocketmq.RocketMqOperationLogWriter;
+import com.flash.framework.operator.log.core.processor.builder.DefaultOperationBuilder;
+import com.flash.framework.operator.log.core.processor.builder.OperationBuilder;
+import com.flash.framework.operator.log.core.resover.DefaultLogParameterResover;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -31,23 +28,10 @@ public class OperatorLogConfigutation {
     }
 
     @Bean
-    @ConditionalOnProperty(name = "operator.log.mq.mode", havingValue = "rocketmq")
-    public OperationLogWriter rocketMqOperatorLogWriter() {
-        return new RocketMqOperationLogWriter();
+    @ConditionalOnMissingBean
+    public OperationBuilder operationBuilder() {
+        return new DefaultOperationBuilder();
     }
-
-    @Bean
-    @ConditionalOnProperty(name = "operator.log.mq.mode", havingValue = "kafka")
-    public OperationLogWriter kafkaOperatorLogWriter() {
-        return new KafkaOperationLogWriter();
-    }
-
-    @Bean
-    @ConditionalOnProperty(name = "operator.log.mq.mode", havingValue = "redis", matchIfMissing = true)
-    public OperationLogWriter redisOperatorLogWriter() {
-        return new RedisOperationLogWriter();
-    }
-
 
     @Bean
     @ConditionalOnMissingBean

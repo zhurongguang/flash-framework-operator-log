@@ -2,7 +2,10 @@ package com.flash.framework.operator.log.core.model;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.List;
@@ -14,6 +17,9 @@ import java.util.Map;
  */
 @Data
 @ApiModel("demo")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Demo implements Serializable {
 
     @ApiModelProperty("用户名")

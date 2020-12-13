@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author zhurg
  * @date 2019/4/15 - 下午5:28
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"com.flash.framework.operator.log"})
 public class OperatorLogCoreApplication {
 
     public static void main(String[] args) {

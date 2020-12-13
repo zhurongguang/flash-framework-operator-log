@@ -13,14 +13,12 @@ import com.flash.framework.operator.log.web.vo.OperationLogVO;
 import com.flash.framework.web.exception.WebException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.dubbo.config.annotation.Reference;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Objects;
 
 /**
  * 操作日志
@@ -33,7 +31,7 @@ import java.util.Objects;
 @RequestMapping("/api/logs")
 public class OperatorLogController {
 
-    @Reference(version = "${operator.log.reader.version:1.0.0}")
+    @DubboReference(version = "${operator.log.api.version:1.0.0}", retries = 0, timeout = 1000)
     private OperatorLogFacade operatorLogFacade;
 
     @Autowired
@@ -63,13 +61,7 @@ public class OperatorLogController {
         OperatorLogInfoRequest operatorLogInfoRequest = new OperatorLogInfoRequest();
         operatorLogInfoRequest.setId(id);
         RpcResponse<OperationLogDTO> response = operatorLogFacade.queryOperatorLogById(operatorLogInfoRequest);
-        if (response.isSuccess()) {
-            if (Objects.nonNull(response.getResult())) {
-                return operationLogConverter.convertOperationLogDTO2OperationLogVO(response.getResult());
-            }
-            return null;
-        } else {
-            throw new WebException(response.getErrorMsg());
-        }
+        OperationLogDTO dto = RpcResponseUtils.getResponse(response, msg -> new WebException(msg));
+        return operationLogConverter.convertOperationLogDTO2OperationLogVO(dto);
     }
 }

@@ -16,5 +16,9 @@
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger2</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.flash.framework</groupId>
+            <artifactId>flash-framework-commons</artifactId>
+        </dependency>
     </dependencies>
 </project>

@@ -15,6 +15,8 @@
         <module>operator-log-server</module>
         <module>operator-log-common</module>
         <module>operator-log-demo</module>
+        <module>operator-log-adapter</module>
+        <module>operator-log-server-starter</module>
     </modules>
 
     <repositories>
@@ -30,6 +32,7 @@
         <java.version>1.8</java.version>
         <flash-framewoek-dubbo.version>1.0.0.RELEASE</flash-framewoek-dubbo.version>
         <flash-framework-mybatis.version>1.0.0.RELEASE</flash-framework-mybatis.version>
+        <flash-framework.version>1.0.0</flash-framework.version>
     </properties>
 
     <dependencyManagement>
@@ -37,7 +40,7 @@
             <dependency>
                 <groupId>com.flash.framework</groupId>
                 <artifactId>flash-framework-dependencies</artifactId>
-                <version>1.0.0</version>
+                <version>${flash-framework.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

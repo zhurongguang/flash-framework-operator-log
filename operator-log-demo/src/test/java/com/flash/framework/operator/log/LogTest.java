@@ -49,6 +49,16 @@ public class LogTest {
         System.out.println(demoService.demo5(buildDemo()));
     }
 
+    @Test
+    public void demo6() {
+        demoService.demo6(1L);
+    }
+
+    @Test
+    public void demo7() {
+        demoService.demo7(1L, "dd");
+    }
+
     private Demo buildDemo() {
         Demo demo = new Demo();
         demo.setAge(new Random().nextInt(100));

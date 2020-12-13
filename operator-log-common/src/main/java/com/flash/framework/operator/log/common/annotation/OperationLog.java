@@ -1,7 +1,6 @@
 package com.flash.framework.operator.log.common.annotation;
 
 import com.flash.framework.operator.log.common.enums.OperatorType;
-import com.flash.framework.operator.log.common.processor.OperationLogProcessor;
 
 import java.lang.annotation.*;
 
@@ -43,11 +42,4 @@ public @interface OperationLog {
      * @return
      */
     OperatorType operatorType() default OperatorType.UNKNOWN;
-
-    /**
-     * 日志生成过程处理器
-     *
-     * @return
-     */
-    Class<? extends OperationLogProcessor>[] logProcessor() default {};
 }

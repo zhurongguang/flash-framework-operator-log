@@ -1,16 +1,16 @@
 package com.flash.framework.operator.log.web.converter;
 
-import com.flash.framework.operator.log.api.OperationLogConstants;
-import com.flash.framework.operator.log.api.processor.AbstractOperationLogProcessor;
-import com.flash.framework.operator.log.api.resover.LogParameterResover;
 import com.flash.framework.operator.log.common.dto.OperationLogDTO;
+import com.flash.framework.operator.log.common.enums.OperatorType;
+import com.flash.framework.operator.log.common.resover.LogParameterResover;
+import com.flash.framework.operator.log.core.processor.OperationLogProcessor;
+import com.flash.framework.operator.log.core.processor.OperationLogProcessorRegistry;
+import com.flash.framework.operator.log.core.processor.builder.OperationBuilder;
 import com.flash.framework.operator.log.web.vo.OperationLogVO;
+import com.google.common.base.Throwables;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,12 +19,14 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-public class OperationLogConverter implements ApplicationContextAware {
+@AllArgsConstructor
+public class OperationLogConverter {
 
-    private ApplicationContext applicationContext;
+    private final LogParameterResover logParameterResover;
 
-    private LogParameterResover logParameterResover;
+    private final OperationLogProcessorRegistry operationLogProcessorRegistry;
 
+    private final OperationBuilder operationBuilder;
 
     public OperationLogVO convertOperationLogDTO2OperationLogVO(OperationLogDTO operationLogDTO) {
         OperationLogVO operationLogVO = new OperationLogVO();
@@ -40,38 +42,27 @@ public class OperationLogConverter implements ApplicationContextAware {
         operationLogVO.setStatus(operationLogDTO.getStatus());
         operationLogVO.setErrorMsg(operationLogDTO.getErrorMsg());
         operationLogVO.setOperTime(operationLogDTO.getOperTime());
-        if (null != logParameterResover && StringUtils.isNotBlank(operationLogDTO.getParams())) {
+        //解析操作参数
+        if (StringUtils.isNotBlank(operationLogDTO.getParams())) {
             operationLogVO.setParams(logParameterResover.resover(operationLogDTO.getParams()));
         }
-        if (StringUtils.isNotBlank(operationLogDTO.getHistryRecord()) || StringUtils.isNotBlank(operationLogDTO.getNewRecord())) {
-            if (MapUtils.isNotEmpty(operationLogDTO.getExtra()) && operationLogDTO.getExtra().containsKey(OperationLogConstants.OPERATION_LOG_PROCESSOR)) {
-                String logProcessorStr = operationLogDTO.getExtra().get(OperationLogConstants.OPERATION_LOG_PROCESSOR);
-                try {
-                    Class<?> clazz = Class.forName(logProcessorStr);
-                    Object bean = applicationContext.getBean(clazz);
-                    if (bean instanceof AbstractOperationLogProcessor) {
-                        AbstractOperationLogProcessor operationLogProcessor = (AbstractOperationLogProcessor) bean;
-                        if (StringUtils.isNotBlank(operationLogDTO.getHistryRecord())) {
-                            operationLogVO.setHistoryRecord(operationLogProcessor.analysisRecord(operationLogDTO.getHistryRecord()));
-                        }
-                        if (StringUtils.isNotBlank(operationLogDTO.getNewRecord())) {
-                            operationLogVO.setNewRecord(operationLogProcessor.analysisRecord(operationLogDTO.getNewRecord()));
-                        }
-                    }
-                } catch (Exception e) {
-                    log.warn("[OperationLog] OperationLogProcessor class {} not exists,error:", logProcessorStr, e);
-                }
+        OperationLogProcessor operationLogProcessor = operationLogProcessorRegistry.getOrDefault(
+                operationBuilder.buildForOperation(operationLogVO.getModule(), operationLogVO.getOperator(), OperatorType.valueOf(operationLogVO.getOperatorType())));
+        //解析操作前数据记录和操作后数据记录
+        if (StringUtils.isNotBlank(operationLogDTO.getHistryRecord())) {
+            try {
+                operationLogVO.setHistoryRecord(operationLogProcessor.analysisRecord(operationLogDTO.getHistryRecord()));
+            } catch (Exception e) {
+                log.error("[OperationLog] analysis histry record failed,cause:{}", Throwables.getStackTraceAsString(e));
+            }
+        }
+        if (StringUtils.isNotBlank(operationLogDTO.getNewRecord())) {
+            try {
+                operationLogVO.setNewRecord(operationLogProcessor.analysisRecord(operationLogDTO.getNewRecord()));
+            } catch (Exception e) {
+                log.error("[OperationLog] analysis new record failed,cause:{}", Throwables.getStackTraceAsString(e));
             }
         }
         return operationLogVO;
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-        try {
-            logParameterResover = applicationContext.getBean(LogParameterResover.class);
-        } catch (Exception e) {
-        }
     }
 }

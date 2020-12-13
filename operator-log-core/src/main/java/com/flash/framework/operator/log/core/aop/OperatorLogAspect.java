@@ -3,31 +3,30 @@ package com.flash.framework.operator.log.core.aop;
 import com.alibaba.fastjson.JSON;
 import com.flash.framework.commons.context.RequestContext;
 import com.flash.framework.commons.utils.AopUtils;
-import com.flash.framework.operator.log.api.OperationLogConstants;
-import com.flash.framework.operator.log.api.processor.AbstractOperationLogProcessor;
-import com.flash.framework.operator.log.api.resover.LogParameter;
+import com.flash.framework.operator.log.common.OperationLogConstants;
 import com.flash.framework.operator.log.common.annotation.OperationLog;
+import com.flash.framework.operator.log.common.collector.OperationLogCollector;
 import com.flash.framework.operator.log.common.dto.OperationLogDTO;
-import com.flash.framework.operator.log.common.processor.OperationLogProcessor;
-import com.flash.framework.operator.log.core.writer.OperationLogWriter;
+import com.flash.framework.operator.log.common.resover.LogParameter;
+import com.flash.framework.operator.log.core.processor.OperationLogProcessor;
+import com.flash.framework.operator.log.core.processor.OperationLogProcessorRegistry;
+import com.flash.framework.operator.log.core.processor.builder.OperationBuilder;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 
-import javax.annotation.PostConstruct;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * 操作日志切面
@@ -39,24 +38,17 @@ import java.util.Objects;
 @Aspect
 public class OperatorLogAspect {
 
-    private Map<Class<? extends OperationLogProcessor>, OperationLogProcessor> logProcessorMap = Maps.newConcurrentMap();
-
     @Autowired
-    private OperationLogWriter operationLogWriter;
-
-    @Autowired
-    private ApplicationContext applicationContext;
+    private OperationLogCollector operationLogCollector;
 
     @Autowired
     private RequestContext requestContext;
 
-    @PostConstruct
-    public void init() {
-        Map<String, AbstractOperationLogProcessor> processorBeans = applicationContext.getBeansOfType(AbstractOperationLogProcessor.class);
-        if (MapUtils.isNotEmpty(processorBeans)) {
-            processorBeans.values().forEach(operationLogProcessor -> logProcessorMap.put(operationLogProcessor.getClass(), operationLogProcessor));
-        }
-    }
+    @Autowired
+    private OperationLogProcessorRegistry operationLogProcessorRegistry;
+
+    @Autowired
+    private OperationBuilder operationBuilder;
 
     @Around(value = "@annotation(com.flash.framework.operator.log.common.annotation.OperationLog)")
     public Object operator(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -78,10 +70,12 @@ public class OperatorLogAspect {
         Object[] args = joinPoint.getArgs();
         if (Objects.nonNull(args) && args.length > 0) {
             List<LogParameter> parameters = Lists.newArrayList();
+            Annotation[][] paramsAnnos = method.getParameterAnnotations();
             for (int i = 0; i < method.getParameterTypes().length; i++) {
                 parameters.add(LogParameter.builder()
-                        .parameterClass(method.getParameterTypes()[i].getName())
+                        .parameterClass(method.getParameterTypes()[i])
                         .params(Objects.nonNull(args[i]) ? JSON.toJSONString(args[i]) : null)
+                        .name(findSwaggerApiParamAnno(paramsAnnos, i))
                         .build());
             }
             if (CollectionUtils.isNotEmpty(parameters)) {
@@ -89,15 +83,15 @@ public class OperatorLogAspect {
             }
         }
 
-        OperationLogProcessor operationLogProcessor = null;
-        if (Objects.nonNull(anno.logProcessor()) && anno.logProcessor().length > 0) {
-            operationLogProcessor = logProcessorMap.get(anno.logProcessor()[0]);
-        }
+        OperationLogProcessor operationLogProcessor = operationLogProcessorRegistry.getOrDefault(
+                operationBuilder.buildForOperation(operationLogDTO.getModule(), operationLogDTO.getOperator(), anno.operatorType()));
+
         try {
 
             doProcessorBefore(operationLogProcessor, operationLogDTO, args);
 
             Object rs = joinPoint.proceed();
+
             operationLogDTO.setStatus(OperationLogConstants.OPERATOR_LOG_SUCCESS);
 
             doProcessorAfter(operationLogProcessor, operationLogDTO, rs, args);
@@ -112,7 +106,7 @@ public class OperatorLogAspect {
             throw e;
         } finally {
             try {
-                operationLogWriter.saveOperationLog(operationLogDTO);
+                operationLogCollector.collectOperationLog(operationLogDTO);
             } catch (Exception e) {
                 log.error("[OperationLog] save operation log failed,cause:{}", Throwables.getStackTraceAsString(e));
             }
@@ -120,32 +114,47 @@ public class OperatorLogAspect {
     }
 
     private void doProcessorBefore(OperationLogProcessor operationLogProcessor, OperationLogDTO operationLogDTO, Object... args) {
-        if (Objects.nonNull(operationLogProcessor)) {
-            try {
-                operationLogProcessor.beforeProcess(operationLogDTO, args);
-            } catch (Throwable e) {
-                log.error("[OperationLog] OperationLogProcessor {} do beforeProcess failed,cause:{}", operationLogProcessor.getClass().getCanonicalName(), Throwables.getStackTraceAsString(e));
-            }
+        try {
+            operationLogProcessor.beforeProcess(operationLogDTO, args);
+        } catch (Throwable e) {
+            log.error("[OperationLog] OperationLogProcessor {} do beforeProcess failed,cause:{}", operationLogProcessor, Throwables.getStackTraceAsString(e));
         }
     }
 
     private void doProcessorAfter(OperationLogProcessor operationLogProcessor, OperationLogDTO operationLogDTO, Object result, Object... args) {
-        if (Objects.nonNull(operationLogProcessor)) {
-            try {
-                operationLogProcessor.afterProcess(operationLogDTO, result, args);
-            } catch (Throwable e) {
-                log.error("[OperationLog] OperationLogProcessor {} do afterProcess failed,cause:{}", operationLogProcessor.getClass().getCanonicalName(), Throwables.getStackTraceAsString(e));
-            }
+        try {
+            operationLogProcessor.afterProcess(operationLogDTO, result, args);
+        } catch (Throwable e) {
+            log.error("[OperationLog] OperationLogProcessor {} do afterProcess failed,cause:{}", operationLogProcessor, Throwables.getStackTraceAsString(e));
         }
     }
 
     private void doProcessorException(OperationLogProcessor operationLogProcessor, OperationLogDTO operationLogDTO, Object... args) {
-        if (Objects.nonNull(operationLogProcessor)) {
-            try {
-                operationLogProcessor.exceptionProcess(operationLogDTO, args);
-            } catch (Throwable e) {
-                log.error("[OperationLog] OperationLogProcessor {} do exceptionProcess failed,cause:{}", operationLogProcessor.getClass().getCanonicalName(), Throwables.getStackTraceAsString(e));
-            }
+        try {
+            operationLogProcessor.exceptionProcess(operationLogDTO, args);
+        } catch (Throwable e) {
+            log.error("[OperationLog] OperationLogProcessor {} do exceptionProcess failed,cause:{}", operationLogProcessor, Throwables.getStackTraceAsString(e));
         }
+    }
+
+    private String findSwaggerApiParamAnno(Annotation[][] paramsAnnos, int index) {
+        if (Objects.isNull(paramsAnnos)) {
+            return null;
+        }
+        Annotation[] annotations = paramsAnnos[index];
+        if (Objects.isNull(annotations) || annotations.length <= 0) {
+            return null;
+        }
+        Optional<Annotation> optionalAnnotation = Lists.newArrayList(annotations).stream()
+                .filter(anno -> anno instanceof ApiParam)
+                .findFirst();
+        if (!optionalAnnotation.isPresent()) {
+            return null;
+        }
+        ApiParam apiParam = (ApiParam) optionalAnnotation.get();
+        if (apiParam.hidden()) {
+            return null;
+        }
+        return apiParam.name();
     }
 }

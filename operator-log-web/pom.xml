@@ -30,7 +30,6 @@
             <groupId>com.flash.framework</groupId>
             <artifactId>operator-log-core</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>

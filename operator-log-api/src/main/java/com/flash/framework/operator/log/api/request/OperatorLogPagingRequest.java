@@ -75,11 +75,6 @@ public class OperatorLogPagingRequest extends PagingRpcRequest {
      */
     @ApiModelProperty("查询结束时间")
     private String endTime;
-    /**
-     * 租户ID
-     */
-    @ApiModelProperty("租户id")
-    private Integer tenantId;
 
     /**
      * 操作人集合
