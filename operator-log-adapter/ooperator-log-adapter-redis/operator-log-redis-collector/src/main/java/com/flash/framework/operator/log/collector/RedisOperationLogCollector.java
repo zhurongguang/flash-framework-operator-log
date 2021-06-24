@@ -6,7 +6,11 @@ import com.flash.framework.operator.log.common.dto.OperationLogDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisConnectionUtils;
+
+import java.nio.charset.Charset;
 
 /**
  * @author zhurg
@@ -18,14 +22,26 @@ public class RedisOperationLogCollector implements OperationLogCollector {
     @Value("${operator.log.mq.topic:OPERATOR_LOG}")
     private String operatorLogTopic;
 
+    @Value("${operator.log.redis.database:6}")
+    private int operatorLogDatabase;
+
     @Autowired
-    private StringRedisTemplate redisTemplate;
+    private RedisConnectionFactory redisConnectionFactory;
 
     @Override
     public void collectOperationLog(OperationLogDTO operationLogDTO) {
-        redisTemplate.convertAndSend(operatorLogTopic, JSON.toJSONString(operationLogDTO));
-        if (log.isDebugEnabled()) {
-            log.debug("[OperationLog] send operator log {} success", JSON.toJSONString(operationLogDTO));
+        RedisConnection conn = null;
+        try {
+            conn = RedisConnectionUtils.getConnection(redisConnectionFactory);
+
+            conn.select(operatorLogDatabase);
+            
+            conn.publish(operatorLogTopic.getBytes(Charset.forName("UTF-8")), JSON.toJSONString(operationLogDTO).getBytes(Charset.forName("UTF-8")));
+            if (log.isDebugEnabled()) {
+                log.debug("[OperationLog] send operator log {} success", JSON.toJSONString(operationLogDTO));
+            }
+        } finally {
+            RedisConnectionUtils.releaseConnection(conn, redisConnectionFactory, false);
         }
     }
 }

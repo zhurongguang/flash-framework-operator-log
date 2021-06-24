@@ -9,7 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.serializer.RedisSerializer;
+
+import java.nio.charset.Charset;
 
 /**
  * @author zhurg
@@ -26,8 +27,7 @@ public class RedisOperatorLogMessageListener implements MessageListener {
 
     @Override
     public void onMessage(Message message, byte[] pattern) {
-        RedisSerializer redisSerializer = redisTemplate.getValueSerializer();
-        String json = redisSerializer.deserialize(message.getBody()).toString();
+        String json = new String(message.getBody(), Charset.forName("UTF-8"));
         if (log.isDebugEnabled()) {
             log.debug("[OperationLog] accept operator log message {}", json);
         }
